@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Marketplace</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4 md:p-8 font-sans">
+<div class="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-lg space-y-6">
+    <h1 class="text-2xl font-bold text-center text-gray-800">Kalkulator Harga Marketplace</h1>
+    
+    <!-- INPUT DASAR -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700">HPP / Modal (Rp)</label>
+            <input type="number" id="hpp" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" oninput="calculate()">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Biaya Admin Marketplace (%)</label>
+            <input type="number" id="adminFee" value="0" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" oninput="calculate()">
+        </div>
+    </div>
+
+    <!-- BIAYA OPSIONAL DINAMIS -->
+    <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+        <div class="flex justify-between items-center">
+            <label class="text-sm font-semibold text-gray-700">Biaya Opsional Tambahan</label>
+            <button onclick="addOptionalFee()" class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">+ Tambah</button>
+        </div>
+        <div id="optionalFeesList" class="space-y-2"></div>
+        <p id="noOptionalMsg" class="text-xs text-gray-400 italic">Belum ada biaya opsional ditambahkan.</p>
+    </div>
+
+    <hr class="border-gray-200">
+
+    <!-- HARGA JUAL MANUAL -->
+    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <label class="block text-sm font-medium text-gray-700">Harga Jual Manual (Opsional)</label>
+        <input type="number" id="manualPrice" placeholder="Kosongkan untuk pakai rekomendasi" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" oninput="calculate()">
+        <p class="text-xs text-gray-500 mt-1">Jika diisi, profit & margin dihitung berdasarkan harga ini.</p>
+    </div>
+
+    <!-- MODE REKOMENDASI -->
+    <div id="rekomendasiContainer">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Metode Rekomendasi Harga Jual</label>
+        <div class="flex flex-wrap gap-4 mb-4">
+            <label class="inline-flex items-center">
+                <input type="radio" name="mode" value="fixed" checked class="text-blue-600 focus:ring-blue-500" onchange="toggleTarget()">
+                <span class="ml-2 text-sm">Target Profit (Rp)</span>
+            </label>
+            <label class="inline-flex items-center">
+                <input type="radio" name="mode" value="margin" class="text-blue-600 focus:ring-blue-500" onchange="toggleTarget()">
+                <span class="ml-2 text-sm">Target Margin (%)</span>
+            </label>
+            <label class="inline-flex items-center">
+                <input type="radio" name="mode" value="bep" class="text-blue-600 focus:ring-blue-500" onchange="toggleTarget()">
+                <span class="ml-2 text-sm">BEP (Impas)</span>
+            </label>
+        </div>
+        <div id="targetContainer">
+            <label class="block text-sm font-medium text-gray-700" id="targetLabel">Target Profit (Rp)</label>
+            <input type="number" id="targetValue" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" oninput="calculate()">
+        </div>
+    </div>
+
+    <!-- HASIL -->
+    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-100 space-y-4">
+        <!-- PROFIL UTAMA -->
+        <div class="text-center pb-4 border-b border-blue-200">
+            <p class="text-sm text-gray-600" id="priceLabel">Harga Jual Rekomendasi</p>
+            <p class="text-3xl font-extrabold text-blue-700 mt-1" id="resPrice">Rp 0</p>
+        </div>
+
+        <!-- TOTAL DITERIMA / PENCAIRAN (BARU) -->
+        <div class="text-center py-3 rounded-lg bg-emerald-50 border border-emerald-200 shadow-sm">
+            <p class="text-sm text-gray-600">Estimasi Total Diterima (Pencairan)</p>
+            <p class="text-3xl font-black mt-1 text-emerald-700" id="resPayout">Rp 0</p>
+            <p class="text-xs text-gray-500 mt-1">Harga Jual dikurangi Total Biaya Marketplace</p>
+        </div>
+
+        <!-- PROFIT UTAMA -->
+        <div class="text-center py-3 rounded-lg bg-white shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-600">Estimasi Profit Bersih</p>
+            <p class="text-4xl font-black mt-1" id="resProfit">Rp 0</p>
+            <p class="text-sm text-gray-500 mt-1">Margin: <span id="resMargin" class="font-semibold">0%</span></p>
+        </div>
+
+        <!-- DONUT CHART -->
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+            <p class="text-sm font-semibold text-gray-700 mb-3 text-center">Breakdown Komponen Harga</p>
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                <svg id="donutChart" width="180" height="180" viewBox="0 0 180 180" class="transform -rotate-90">
+                    <circle cx="90" cy="90" r="70" fill="none" stroke="#f3f4f6" stroke-width="25"/>
+                </svg>
+                <div id="chartLegend" class="grid grid-cols-1 gap-1 text-xs w-full"></div>
+            </div>
+        </div>
+
+        <!-- DETAIL BIAYA -->
+        <div class="grid grid-cols-2 gap-2 text-sm text-gray-700 pt-2 border-t border-blue-200">
+            <div class="flex justify-between"><span>Total Biaya:</span><span id="resFees" class="font-semibold">Rp 0</span></div>
+            <div class="flex justify-between"><span>Biaya Layanan:</span><span>Rp 1.250</span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+let optionalFees = [];
+let optionalIdCounter = 0;
+
+const COLORS = {
+    hpp: '#6366f1',      // indigo
+    admin: '#f59e0b',    // amber
+    service: '#8b5cf6',  // violet
+    optional: '#ec4899', // pink
+    profit: '#10b981'    // green
+};
+
+function addOptionalFee() {
+    optionalFees.push({ id: ++optionalIdCounter, label: 'Biaya baru', type: 'fixed', value: 0 });
+    renderOptionalFees();
+    calculate();
+}
+
+function removeOptionalFee(id) {
+    optionalFees = optionalFees.filter(f => f.id !== id);
+    renderOptionalFees();
+    calculate();
+}
+
+function updateOptionalFee(id, field, value) {
+    const fee = optionalFees.find(f => f.id === id);
+    if (!fee) return;
+    if (field === 'value') fee.value = parseFloat(value) || 0;
+    else fee[field] = value;
+    calculate();
+}
+
+function renderOptionalFees() {
+    const list = document.getElementById('optionalFeesList');
+    const msg = document.getElementById('noOptionalMsg');
+    msg.style.display = optionalFees.length === 0 ? 'block' : 'none';
+    
+    list.innerHTML = optionalFees.map(fee => `
+        <div class="flex flex-wrap gap-2 items-center bg-gray-50 p-2 rounded">
+            <input type="text" value="${fee.label}" placeholder="Label" 
+                class="flex-1 min-w-[100px] text-sm rounded border border-gray-300 p-1.5" 
+                oninput="updateOptionalFee(${fee.id}, 'label', this.value)">
+            <input type="number" value="${fee.value}" placeholder="Nilai" 
+                class="w-24 text-sm rounded border border-gray-300 p-1.5" 
+                oninput="updateOptionalFee(${fee.id}, 'value', this.value)">
+            <select class="text-sm rounded border border-gray-300 p-1.5" 
+                onchange="updateOptionalFee(${fee.id}, 'type', this.value)">
+                <option value="fixed" ${fee.type === 'fixed' ? 'selected' : ''}>Rp (Fixed)</option>
+                <option value="percent" ${fee.type === 'percent' ? 'selected' : ''}>% (Persen)</option>
+            </select>
+            <button onclick="removeOptionalFee(${fee.id})" class="text-red-600 hover:text-red-800 text-sm px-2">✕</button>
+        </div>
+    `).join('');
+}
+
+function toggleTarget() {
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    const container = document.getElementById('targetContainer');
+    const label = document.getElementById('targetLabel');
+    const input = document.getElementById('targetValue');
+
+    if (mode === 'fixed') {
+        container.style.display = 'block';
+        label.textContent = 'Target Profit (Rp)';
+        input.step = '1';
+    } else if (mode === 'margin') {
+        container.style.display = 'block';
+        label.textContent = 'Target Margin dari Harga Jual (%)';
+        input.step = '0.1';
+    } else {
+        container.style.display = 'none';
+    }
+    calculate();
+}
+
+function formatRp(num) {
+    return 'Rp ' + Math.round(num).toLocaleString('id-ID');
+}
+
+function calculate() {
+    const hpp = parseFloat(document.getElementById('hpp').value) || 0;
+    const adminFee = (parseFloat(document.getElementById('adminFee').value) || 0) / 100;
+    const serviceFee = 1250;
+    const manualPrice = parseFloat(document.getElementById('manualPrice').value);
+    
+    let optFixedTotal = 0;
+    let optPercentTotal = 0;
+    optionalFees.forEach(f => {
+        if (f.type === 'fixed') optFixedTotal += f.value;
+        else optPercentTotal += f.value / 100;
+    });
+    
+    const totalFeePercent = adminFee + optPercentTotal;
+    const totalFixedFee = serviceFee + optFixedTotal;
+    
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    const targetVal = parseFloat(document.getElementById('targetValue').value) || 0;
+    
+    let sellingPrice = 0;
+    let isManual = false;
+
+    if (manualPrice > 0) {
+        sellingPrice = manualPrice;
+        isManual = true;
+    } else {
+        if (totalFeePercent >= 1) {
+            document.getElementById('resPrice').textContent = 'Error: Total % >= 100%';
+            return;
+        }
+        if (mode === 'fixed') {
+            sellingPrice = (hpp + targetVal + totalFixedFee) / (1 - totalFeePercent);
+        } else if (mode === 'margin') {
+            const marginPercent = targetVal / 100;
+            if (totalFeePercent + marginPercent >= 1) {
+                document.getElementById('resPrice').textContent = 'Error: Total % >= 100%';
+                return;
+            }
+            sellingPrice = (hpp + totalFixedFee) / (1 - totalFeePercent - marginPercent);
+        } else if (mode === 'bep') {
+            sellingPrice = (hpp + totalFixedFee) / (1 - totalFeePercent);
+        }
+    }
+
+    const adminAmount = sellingPrice * adminFee;
+    const optPercentAmount = sellingPrice * optPercentTotal;
+    const optTotal = optFixedTotal + optPercentAmount;
+    const totalFees = adminAmount + serviceFee + optTotal;
+    
+    // BARU: Hitung Total Diterima (Pencairan)
+    const payout = sellingPrice - totalFees;
+    const profit = payout - hpp;
+    const margin = sellingPrice > 0 ? (profit / sellingPrice) * 100 : 0;
+
+    // Update UI
+    document.getElementById('priceLabel').textContent = isManual ? 'Harga Jual Manual' : 'Harga Jual Rekomendasi';
+    document.getElementById('resPrice').textContent = formatRp(sellingPrice);
+    document.getElementById('resFees').textContent = formatRp(totalFees);
+    
+    // Update Total Diterima
+    document.getElementById('resPayout').textContent = formatRp(payout);
+    
+    const profitEl = document.getElementById('resProfit');
+    profitEl.textContent = formatRp(Math.abs(profit));
+    if (profit < 0) {
+        profitEl.textContent = '- ' + formatRp(Math.abs(profit));
+        profitEl.className = 'text-4xl font-black mt-1 text-red-600';
+    } else {
+        profitEl.className = 'text-4xl font-black mt-1 text-green-600';
+    }
+    
+    document.getElementById('resMargin').textContent = margin.toFixed(2) + '%';
+
+    renderDonutChart(hpp, adminAmount, serviceFee, optTotal, profit, sellingPrice);
+}
+
+function renderDonutChart(hpp, admin, service, optional, profit, total) {
+    const svg = document.getElementById('donutChart');
+    const legend = document.getElementById('chartLegend');
+    
+    const segments = [
+        { label: 'HPP / Modal', value: hpp, color: COLORS.hpp },
+        { label: 'Biaya Admin', value: admin, color: COLORS.admin },
+        { label: 'Biaya Layanan', value: service, color: COLORS.service },
+        { label: 'Biaya Opsional', value: optional, color: COLORS.optional },
+        { label: 'Profit', value: Math.max(0, profit), color: COLORS.profit }
+    ];
+    
+    if (profit < 0) {
+        segments[4].label = 'Rugi';
+        segments[4].color = '#ef4444';
+    }
+    
+    const radius = 70;
+    const circumference = 2 * Math.PI * radius;
+    const totalVal = segments.reduce((s, x) => s + x.value, 0);
+    
+    svg.innerHTML = '<circle cx="90" cy="90" r="70" fill="none" stroke="#f3f4f6" stroke-width="25"/>';
+    
+    if (totalVal <= 0) {
+        legend.innerHTML = '<p class="text-center text-gray-400 text-xs">Tidak ada data</p>';
+        return;
+    }
+    
+    let offset = 0;
+    segments.forEach(seg => {
+        if (seg.value <= 0) return;
+        const portion = seg.value / totalVal;
+        const dash = portion * circumference;
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', '90');
+        circle.setAttribute('cy', '90');
+        circle.setAttribute('r', radius);
+        circle.setAttribute('fill', 'none');
+        circle.setAttribute('stroke', seg.color);
+        circle.setAttribute('stroke-width', '25');
+        circle.setAttribute('stroke-dasharray', `${dash} ${circumference - dash}`);
+        circle.setAttribute('stroke-dashoffset', -offset);
+        svg.appendChild(circle);
+        offset += dash;
+    });
+    
+    legend.innerHTML = segments.map(seg => {
+        const pct = totalVal > 0 ? ((seg.value / totalVal) * 100).toFixed(1) : 0;
+        return `
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="inline-block w-3 h-3 rounded-sm" style="background:${seg.color}"></span>
+                    <span class="text-gray-700">${seg.label}</span>
+                </div>
+                <div class="text-right">
+                    <span class="font-semibold text-gray-800">${pct}%</span>
+                    <span class="text-gray-500 ml-1">${formatRp(seg.value)}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+toggleTarget();
+renderOptionalFees();
+calculate();
+</script>
+</body>
+</html>
