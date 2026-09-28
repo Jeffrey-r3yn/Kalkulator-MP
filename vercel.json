@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/kalkulator.html"
+      "destination": "/Kalkulator.html"
     }
   ]
 }
