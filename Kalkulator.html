@@ -9,16 +9,42 @@
 <body class="bg-gray-100 p-4 md:p-8 font-sans">
 <div class="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-lg space-y-6">
     <h1 class="text-2xl font-bold text-center text-gray-800">Kalkulator Harga Marketplace</h1>
-    
+
     <!-- INPUT DASAR -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium text-gray-700">HPP / Modal (Rp)</label>
-            <input type="number" id="hpp" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" oninput="calculate()">
+            <input type="number" id="hpp" value="0" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" oninput="calculate()">
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700">Biaya Admin Marketplace (%)</label>
-            <input type="number" id="adminFee" value="0" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" oninput="calculate()">
+            <label class="block text-sm font-medium text-gray-700">Harga Jual Manual (Opsional)</label>
+            <input type="number" id="manualPrice" min="0" placeholder="Kosongkan untuk pakai rekomendasi" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" oninput="calculate()">
+        </div>
+    </div>
+
+    <!-- BIAYA MARKETPLACE -->
+    <div class="border border-blue-200 bg-blue-50/50 rounded-lg p-4 space-y-4">
+        <div>
+            <h2 class="text-sm font-semibold text-gray-800">Biaya Marketplace</h2>
+            <p class="text-xs text-gray-500 mt-1">Default mengikuti contoh transaksi Shopee: Admin 9% + Layanan 4,5% + Promosi 5,55% + Proses Pesanan Rp1.250.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Biaya Admin (%)</label>
+                <input type="number" id="adminFee" value="9" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" oninput="calculate()">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Biaya Layanan (%)</label>
+                <input type="number" id="serviceFeePercent" value="4.5" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" oninput="calculate()">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Biaya Promosi (%)</label>
+                <input type="number" id="promoFee" value="5.55" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" oninput="calculate()">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Biaya Proses Pesanan (Rp)</label>
+                <input type="number" id="orderProcessFee" value="1250" min="0" step="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" oninput="calculate()">
+            </div>
         </div>
     </div>
 
@@ -33,13 +59,6 @@
     </div>
 
     <hr class="border-gray-200">
-
-    <!-- HARGA JUAL MANUAL -->
-    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <label class="block text-sm font-medium text-gray-700">Harga Jual Manual (Opsional)</label>
-        <input type="number" id="manualPrice" placeholder="Kosongkan untuk pakai rekomendasi" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" oninput="calculate()">
-        <p class="text-xs text-gray-500 mt-1">Jika diisi, profit & margin dihitung berdasarkan harga ini.</p>
-    </div>
 
     <!-- MODE REKOMENDASI -->
     <div id="rekomendasiContainer">
@@ -66,27 +85,23 @@
 
     <!-- HASIL -->
     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-100 space-y-4">
-        <!-- PROFIL UTAMA -->
         <div class="text-center pb-4 border-b border-blue-200">
             <p class="text-sm text-gray-600" id="priceLabel">Harga Jual Rekomendasi</p>
             <p class="text-3xl font-extrabold text-blue-700 mt-1" id="resPrice">Rp 0</p>
         </div>
 
-        <!-- TOTAL DITERIMA / PENCAIRAN (BARU) -->
         <div class="text-center py-3 rounded-lg bg-emerald-50 border border-emerald-200 shadow-sm">
             <p class="text-sm text-gray-600">Estimasi Total Diterima (Pencairan)</p>
             <p class="text-3xl font-black mt-1 text-emerald-700" id="resPayout">Rp 0</p>
-            <p class="text-xs text-gray-500 mt-1">Harga Jual dikurangi Total Biaya Marketplace</p>
+            <p class="text-xs text-gray-500 mt-1">Harga jual dikurangi seluruh biaya marketplace</p>
         </div>
 
-        <!-- PROFIT UTAMA -->
         <div class="text-center py-3 rounded-lg bg-white shadow-sm border border-gray-100">
             <p class="text-sm text-gray-600">Estimasi Profit Bersih</p>
             <p class="text-4xl font-black mt-1" id="resProfit">Rp 0</p>
             <p class="text-sm text-gray-500 mt-1">Margin: <span id="resMargin" class="font-semibold">0%</span></p>
         </div>
 
-        <!-- DONUT CHART -->
         <div class="bg-white p-4 rounded-lg shadow-sm">
             <p class="text-sm font-semibold text-gray-700 mb-3 text-center">Breakdown Komponen Harga</p>
             <div class="flex flex-col md:flex-row items-center justify-center gap-4">
@@ -97,10 +112,13 @@
             </div>
         </div>
 
-        <!-- DETAIL BIAYA -->
-        <div class="grid grid-cols-2 gap-2 text-sm text-gray-700 pt-2 border-t border-blue-200">
-            <div class="flex justify-between"><span>Total Biaya:</span><span id="resFees" class="font-semibold">Rp 0</span></div>
-            <div class="flex justify-between"><span>Biaya Layanan:</span><span>Rp 1.250</span></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-700 pt-2 border-t border-blue-200">
+            <div class="flex justify-between"><span>Biaya Admin:</span><span id="resAdminFee" class="font-semibold">Rp 0</span></div>
+            <div class="flex justify-between"><span>Biaya Layanan:</span><span id="resServiceFee" class="font-semibold">Rp 0</span></div>
+            <div class="flex justify-between"><span>Biaya Promosi:</span><span id="resPromoFee" class="font-semibold">Rp 0</span></div>
+            <div class="flex justify-between"><span>Proses Pesanan:</span><span id="resProcessFee" class="font-semibold">Rp 0</span></div>
+            <div class="flex justify-between"><span>Biaya Opsional:</span><span id="resOptionalFee" class="font-semibold">Rp 0</span></div>
+            <div class="flex justify-between"><span>Total Biaya:</span><span id="resFees" class="font-bold">Rp 0</span></div>
         </div>
     </div>
 </div>
@@ -110,11 +128,13 @@ let optionalFees = [];
 let optionalIdCounter = 0;
 
 const COLORS = {
-    hpp: '#6366f1',      // indigo
-    admin: '#f59e0b',    // amber
-    service: '#8b5cf6',  // violet
-    optional: '#ec4899', // pink
-    profit: '#10b981'    // green
+    hpp: '#6366f1',
+    admin: '#f59e0b',
+    service: '#8b5cf6',
+    promo: '#0ea5e9',
+    process: '#f97316',
+    optional: '#ec4899',
+    profit: '#10b981'
 };
 
 function addOptionalFee() {
@@ -141,16 +161,16 @@ function renderOptionalFees() {
     const list = document.getElementById('optionalFeesList');
     const msg = document.getElementById('noOptionalMsg');
     msg.style.display = optionalFees.length === 0 ? 'block' : 'none';
-    
+
     list.innerHTML = optionalFees.map(fee => `
         <div class="flex flex-wrap gap-2 items-center bg-gray-50 p-2 rounded">
-            <input type="text" value="${fee.label}" placeholder="Label" 
-                class="flex-1 min-w-[100px] text-sm rounded border border-gray-300 p-1.5" 
+            <input type="text" value="${fee.label}" placeholder="Label"
+                class="flex-1 min-w-[100px] text-sm rounded border border-gray-300 p-1.5"
                 oninput="updateOptionalFee(${fee.id}, 'label', this.value)">
-            <input type="number" value="${fee.value}" placeholder="Nilai" 
-                class="w-24 text-sm rounded border border-gray-300 p-1.5" 
+            <input type="number" value="${fee.value}" placeholder="Nilai"
+                class="w-24 text-sm rounded border border-gray-300 p-1.5"
                 oninput="updateOptionalFee(${fee.id}, 'value', this.value)">
-            <select class="text-sm rounded border border-gray-300 p-1.5" 
+            <select class="text-sm rounded border border-gray-300 p-1.5"
                 onchange="updateOptionalFee(${fee.id}, 'type', this.value)">
                 <option value="fixed" ${fee.type === 'fixed' ? 'selected' : ''}>Rp (Fixed)</option>
                 <option value="percent" ${fee.type === 'percent' ? 'selected' : ''}>% (Persen)</option>
@@ -184,25 +204,32 @@ function formatRp(num) {
     return 'Rp ' + Math.round(num).toLocaleString('id-ID');
 }
 
+function getPercentInput(id) {
+    return (parseFloat(document.getElementById(id).value) || 0) / 100;
+}
+
 function calculate() {
     const hpp = parseFloat(document.getElementById('hpp').value) || 0;
-    const adminFee = (parseFloat(document.getElementById('adminFee').value) || 0) / 100;
-    const serviceFee = 1250;
     const manualPrice = parseFloat(document.getElementById('manualPrice').value);
-    
+
+    const adminFee = getPercentInput('adminFee');
+    const serviceFeePercent = getPercentInput('serviceFeePercent');
+    const promoFee = getPercentInput('promoFee');
+    const orderProcessFee = parseFloat(document.getElementById('orderProcessFee').value) || 0;
+
     let optFixedTotal = 0;
     let optPercentTotal = 0;
     optionalFees.forEach(f => {
         if (f.type === 'fixed') optFixedTotal += f.value;
         else optPercentTotal += f.value / 100;
     });
-    
-    const totalFeePercent = adminFee + optPercentTotal;
-    const totalFixedFee = serviceFee + optFixedTotal;
-    
+
+    const totalFeePercent = adminFee + serviceFeePercent + promoFee + optPercentTotal;
+    const totalFixedFee = orderProcessFee + optFixedTotal;
+
     const mode = document.querySelector('input[name="mode"]:checked').value;
     const targetVal = parseFloat(document.getElementById('targetValue').value) || 0;
-    
+
     let sellingPrice = 0;
     let isManual = false;
 
@@ -211,15 +238,16 @@ function calculate() {
         isManual = true;
     } else {
         if (totalFeePercent >= 1) {
-            document.getElementById('resPrice').textContent = 'Error: Total % >= 100%';
+            document.getElementById('resPrice').textContent = 'Error: Total biaya persen >= 100%';
             return;
         }
+
         if (mode === 'fixed') {
             sellingPrice = (hpp + targetVal + totalFixedFee) / (1 - totalFeePercent);
         } else if (mode === 'margin') {
             const marginPercent = targetVal / 100;
             if (totalFeePercent + marginPercent >= 1) {
-                document.getElementById('resPrice').textContent = 'Error: Total % >= 100%';
+                document.getElementById('resPrice').textContent = 'Error: Biaya + margin >= 100%';
                 return;
             }
             sellingPrice = (hpp + totalFixedFee) / (1 - totalFeePercent - marginPercent);
@@ -229,23 +257,26 @@ function calculate() {
     }
 
     const adminAmount = sellingPrice * adminFee;
+    const serviceAmount = sellingPrice * serviceFeePercent;
+    const promoAmount = sellingPrice * promoFee;
     const optPercentAmount = sellingPrice * optPercentTotal;
-    const optTotal = optFixedTotal + optPercentAmount;
-    const totalFees = adminAmount + serviceFee + optTotal;
-    
-    // BARU: Hitung Total Diterima (Pencairan)
+    const optionalAmount = optFixedTotal + optPercentAmount;
+
+    const totalFees = adminAmount + serviceAmount + promoAmount + orderProcessFee + optionalAmount;
     const payout = sellingPrice - totalFees;
     const profit = payout - hpp;
     const margin = sellingPrice > 0 ? (profit / sellingPrice) * 100 : 0;
 
-    // Update UI
     document.getElementById('priceLabel').textContent = isManual ? 'Harga Jual Manual' : 'Harga Jual Rekomendasi';
     document.getElementById('resPrice').textContent = formatRp(sellingPrice);
-    document.getElementById('resFees').textContent = formatRp(totalFees);
-    
-    // Update Total Diterima
     document.getElementById('resPayout').textContent = formatRp(payout);
-    
+    document.getElementById('resFees').textContent = formatRp(totalFees);
+    document.getElementById('resAdminFee').textContent = formatRp(adminAmount);
+    document.getElementById('resServiceFee').textContent = formatRp(serviceAmount);
+    document.getElementById('resPromoFee').textContent = formatRp(promoAmount);
+    document.getElementById('resProcessFee').textContent = formatRp(orderProcessFee);
+    document.getElementById('resOptionalFee').textContent = formatRp(optionalAmount);
+
     const profitEl = document.getElementById('resProfit');
     profitEl.textContent = formatRp(Math.abs(profit));
     if (profit < 0) {
@@ -254,40 +285,46 @@ function calculate() {
     } else {
         profitEl.className = 'text-4xl font-black mt-1 text-green-600';
     }
-    
+
     document.getElementById('resMargin').textContent = margin.toFixed(2) + '%';
 
-    renderDonutChart(hpp, adminAmount, serviceFee, optTotal, profit, sellingPrice);
+    renderDonutChart({
+        hpp,
+        admin: adminAmount,
+        service: serviceAmount,
+        promo: promoAmount,
+        process: orderProcessFee,
+        optional: optionalAmount,
+        profit,
+        total: sellingPrice
+    });
 }
 
-function renderDonutChart(hpp, admin, service, optional, profit, total) {
+function renderDonutChart(values) {
     const svg = document.getElementById('donutChart');
     const legend = document.getElementById('chartLegend');
-    
+
     const segments = [
-        { label: 'HPP / Modal', value: hpp, color: COLORS.hpp },
-        { label: 'Biaya Admin', value: admin, color: COLORS.admin },
-        { label: 'Biaya Layanan', value: service, color: COLORS.service },
-        { label: 'Biaya Opsional', value: optional, color: COLORS.optional },
-        { label: 'Profit', value: Math.max(0, profit), color: COLORS.profit }
+        { label: 'HPP / Modal', value: values.hpp, color: COLORS.hpp },
+        { label: 'Biaya Admin', value: values.admin, color: COLORS.admin },
+        { label: 'Biaya Layanan', value: values.service, color: COLORS.service },
+        { label: 'Biaya Promosi', value: values.promo, color: COLORS.promo },
+        { label: 'Proses Pesanan', value: values.process, color: COLORS.process },
+        { label: 'Biaya Opsional', value: values.optional, color: COLORS.optional },
+        { label: values.profit < 0 ? 'Rugi' : 'Profit', value: Math.max(0, values.profit), color: values.profit < 0 ? '#ef4444' : COLORS.profit }
     ];
-    
-    if (profit < 0) {
-        segments[4].label = 'Rugi';
-        segments[4].color = '#ef4444';
-    }
-    
+
     const radius = 70;
     const circumference = 2 * Math.PI * radius;
-    const totalVal = segments.reduce((s, x) => s + x.value, 0);
-    
+    const totalVal = segments.reduce((sum, item) => sum + Math.max(0, item.value), 0);
+
     svg.innerHTML = '<circle cx="90" cy="90" r="70" fill="none" stroke="#f3f4f6" stroke-width="25"/>';
-    
+
     if (totalVal <= 0) {
         legend.innerHTML = '<p class="text-center text-gray-400 text-xs">Tidak ada data</p>';
         return;
     }
-    
+
     let offset = 0;
     segments.forEach(seg => {
         if (seg.value <= 0) return;
@@ -305,9 +342,9 @@ function renderDonutChart(hpp, admin, service, optional, profit, total) {
         svg.appendChild(circle);
         offset += dash;
     });
-    
+
     legend.innerHTML = segments.map(seg => {
-        const pct = totalVal > 0 ? ((seg.value / totalVal) * 100).toFixed(1) : 0;
+        const pct = values.total > 0 ? ((seg.value / values.total) * 100).toFixed(1) : '0.0';
         return `
             <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
